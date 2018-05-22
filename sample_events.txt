@@ -1,0 +1,73 @@
+sample events:
+Strikeout
+Single
+Forceout
+Flyout
+Lineout
+Single
+Home Run
+Groundout
+Flyout
+Strikeout
+Single
+Forceout
+Flyout
+Lineout
+Single
+Home Run
+Groundout
+Flyout
+Groundout
+Lineout
+Home Run
+Groundout
+Strikeout
+Double
+Double
+Strikeout
+Groundout
+Lineout
+Home Run
+Groundout
+Strikeout
+Double
+Double
+Strikeout
+Pop Out
+Strikeout
+Groundout
+Single
+Lineout
+Sac Fly
+Hit By Pitch
+Groundout
+Pop Out
+Strikeout
+Groundout
+Single
+Lineout
+Sac Fly
+Hit By Pitch
+Groundout
+Strikeout
+Flyout
+Groundout
+Flyout
+Groundout
+Flyout
+Strikeout
+Flyout
+Groundout
+Flyout
+Groundout
+Flyout
+Strikeout
+Double
+Flyout
+Flyout
+Strikeout
+Strikeout
+Double
+Flyout
+Flyout
+Strikeout

@@ -1,0 +1,74 @@
+Base = declarative_base()
+
+class Batter(Base):
+    # table of batters, just need names for now    
+    __tablename__ = 'batter'
+    id = Column(Integer, primary_key=True)
+    batter_name = Column(String(250), nullable=False)
+
+
+class Pitcher(Base):
+    # table of pitchers, with link to their tendencies    
+    __tablename__ = 'pitcher'
+    id = Column(Integer, primary_key=True)
+    pitcher_name = Column(String(250), nullable=False)
+    tendency_id = Column(Integer, ForeignKey('tendency.id'), nullable=False )
+    tendency = relationship('Tendency')
+
+class Tendency(Base):   
+    # table of pitcher tendencies
+    __tablename__ = 'tendency'
+    id = Column(Integer, primary_key=True)
+    # pitcher_id = Column(Integer, nullable=False) # not needed?!
+    num_thrown = Column(Integer, nullable=False)
+    pitch_id = Column(Integer, ForeignKey('pitch.id'), nullable=False )
+    pitch = relationship('Pitch', secondary = 'Matchup')
+
+class Pitch(Base):
+    # table of individual pitches
+    __tablename__ = 'pitch'
+    id =  Column(Integer, primary_key=True)
+    pitch_type = Column(String(250), nullable=False)
+    start_spd = Column(Float, nullable=False)
+    end_spd = Column(Float, nullable=False)
+    x0 = Column(Float, nullable=False)
+    y0 = Column(Float, nullable=False)
+    z0 = Column(Float, nullable=False)
+    px = Column(Float, nullable=False)
+    py = Column(Float, nullable=False)
+    pz = Column(Float, nullable=False)
+    pfx_x = Column(Float, nullable=False)
+    pfx_y = Column(Float, nullable=False)
+    pfx_z = Column(Float, nullable=False)
+    vx0 = Column(Float, nullable=False)
+    vy0 = Column(Float, nullable=False)
+    vz0 = Column(Float, nullable=False)
+    ax = Column(Float, nullable=False)
+    ay = Column(Float, nullable=False)
+    az = Column(Float, nullable=False)
+    break_y = Column(Float, nullable=False)
+    break_angle = Column(Float, nullable=False)
+    break_length = Column(Float, nullable=False)
+    spin_rate = Column(Float, nullable=False)
+    spin_dir = Column(Float, nullable=False)
+
+class Matchup(Base):
+    __tablename__ = 'matchup'
+    id =  Column(Integer, primary_key=True)
+    batter_id = Column(Integer, ForeignKey('batter.id'), nullable=False )
+    pitcher_id = Column(Integer, ForeignKey('pitcher.id'), nullable=False )
+    outcome = Column(String(250), nullable=False)
+    outcomeVal = Column(Integer, nullable=False)
+
+# matchup_table = Table('association', Base.metadata, Column('pitcher_id', Integer, ForeignKey('pitcher.id')), Column('batter_id', Integer, ForeignKey('batter.id')), Column('id',))
+
+
+
+# Create an engine that stores data in the local directory's
+# db file.
+engine = create_engine('mysql+mysqldb://root:thisguy@localhost/sportsbet', pool_recycle=3600)
+
+# Create all tables in the engine. This is equivalent to "Create Table"
+# statements in raw SQL.
+# This was run once
+Base.metadata.create_all(engine)
