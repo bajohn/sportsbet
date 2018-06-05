@@ -42,10 +42,11 @@ class DataPuller():
             retArr.append(gid)
         return retArr
 
-    def sendPitchersToDb(self, url,  gid):
-        curUrl = url + gid + 'pitchers/'
-        retVal = requests.get(curUrl)
-        print(curUrl) #, retVal.text)
+    def sendPitcherToDb(self, pitcherIdUrl):
+        retText = requests.get(pitcherIdUrl).text
+        # print(retText)
+        tree = ET.fromstring(retText)
+        print(tree.attrib['first_name'], tree.attrib['last_name'], tree.attrib['id']) 
 
     # todo: for these stats, pare down by only pulling stats that are needed
     # also, check ratio of events that are missing some stats, any patterns here could throw
@@ -89,13 +90,20 @@ class DataPuller():
             stringToParse = pitcherText.split('.xml</a></li><li><a href="')
 
             #assume pitchers all have 5-7 digit id numbers
-            RERes = re.findall('[0-9]{5,7}', pitcherText)
+            regExRes = re.findall('[0-9]{5,7}', pitcherText)
 
-            if RERes:
-                print(RERes)
-                # todo: leaving off here! getting back list of pitcher ids
-            # for pitcherId in stringToParse:
-            #     print(pitcherId.split(' ')[1])
+            if regExRes:
+                pitcherIdArr = []
+                for x in range(0, len(regExRes)):
+                    if x % 2 == 0:
+                        pitcherIdArr.append(regExRes[x])
+
+
+                for pitcherId in pitcherIdArr:
+                    pitcherIdUrl = pitcherUrl + '/' + pitcherId + '.xml'
+                    print(pitcherIdUrl)
+                    self.sendPitcherToDb(pitcherIdUrl)
+                #     print(pitcherId.split(' ')[1])
 
 
             # print(tree)
