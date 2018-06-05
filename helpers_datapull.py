@@ -1,7 +1,11 @@
 import requests
+import xml.etree.ElementTree as ET
+import re
 # helper functions
 class DataPuller():
-    
+    def __init__(self):
+        self.baseUrl ='http://gd2.mlb.com/components/game/mlb/year_'
+
     def padDateEl(self, dateEl):
         # pad with leading 0 
         if dateEl < 10:
@@ -23,11 +27,11 @@ class DataPuller():
         else:
             raise Exception('Invalid month ' + month)
 
-    def getDateUrl(self, baseUrl, day, month, year):
+    def getDateUrl(self, day, month, year):
 
         monthStr = '/month_' + self.padDateEl(month)
         dayStr = '/day_' + self.padDateEl(day)
-        return baseUrl + str(year)  + monthStr + dayStr
+        return self.baseUrl + str(year)  + monthStr + dayStr
         
     def getGameIds(self, retTxt):
         retSplit = retTxt.split('gid_')
@@ -73,51 +77,94 @@ class DataPuller():
                 retObj[stat] = atbat.get(stat)     
         return retObj
 
-    # dateUrl: string like http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_04/ 
-    # iterate with cbFunc(text) for each url
+
     def getPitchers(self):
+        # parse urls like 
+        # http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_01/gid_2017_04_01_sfnmlb_oakmlb_1/pitchers/
+        def pitcherCb(gameUrl):
+            pitcherUrl = gameUrl+'pitchers'
+            print(pitcherUrl)
+            pitcherText = requests.get(pitcherUrl).text
 
-        def pitcherCb(curUrl):
-            print(curUrl)
-            # curUrl = dataPuller.getDateUrl(baseUrl, day, month, year)
-            # retVal = requests.get(curUrl)
+            stringToParse = pitcherText.split('.xml</a></li><li><a href="')
 
-            # # print(retVal.status_code)
-            # retText = retVal.text
-            # if 'gid' in retText:
-            # # gids like /gid_2017_04_01_anamlb_lanmlb_1/' that attach to urls
+            #assume pitchers all have 5-7 digit id numbers
+            RERes = re.findall('[0-9]{5,7}', pitcherText)
 
-            # gids = dataPuller.getGameIds(retText)
+            if RERes:
+                print(RERes)
+                # todo: leaving off here! getting back list of pitcher ids
+            # for pitcherId in stringToParse:
+            #     print(pitcherId.split(' ')[1])
 
-            # for gid in gids:
-            # dataPuller.sendPitchersToDb(curUrl, gid)
-        iterParams = {
-            'startYear': 2017,
-            'endYear': 2017,
-            'cb': pitcherCb,
-            'debug': True
+
+            # print(tree)
+            #printTreeStats(tree)
+        
+        params = {
+            'cb': pitcherCb
         }
-        self.dayIter(iterParams)
+        self.gameIter(params)
 
-    # feed cbFunc with dateUrls, like http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_04/ 
+
+
+
+    # iterate through all days of year that have games
+    # call cb with dayUrl like 
+    # http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_04
     def dayIter(self, params):
-        baseUrl ='http://gd2.mlb.com/components/game/mlb/year_'
+        
         debugComplete = False
         for year in range(params['startYear'], params['endYear']+1):
             # iterate through months
             for month in range(4,12): 
                 # iterate through days
                 for day in range(1, self.getDaysOfMonth(month, year)):
-                    curUrl = self.getDateUrl(baseUrl, day, month, year)
+                    dayUrl = self.getDateUrl(day, month, year)
                     if not debugComplete:
-                        params['cb'](curUrl)
+                        params['cb'](dayUrl)
 
                 
 
                         if params['debug']:
                             debugComplete = True
 
+    # parse gameId response and call cb on each gid url, like
+    # http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_01/gid_2017_04_01_sfnmlb_oakmlb_1/
+    def gidIter(self, params):
+        retText = params['dayRet'].text
+        if 'gid' in retText:
+            # gids like /gid_2017_04_01_anamlb_lanmlb_1/' that attach to urls
+            gids = self.getGameIds(retText)
+            for gid in gids:
+                gidUrl = params['dayUrl'] + gid
+                params['cb'](gidUrl)
+    
+    # dateUrl: string like http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_04/ 
+    # iterate with cbFunc(text) for each url
+    def gameIter(self, params):
 
+        def dayIterCb(dayUrl):
+            dayRet = requests.get(dayUrl)
+
+            gidIterParams = {
+                'dayRet': dayRet,
+                'dayUrl': dayUrl,
+                'cb': params['cb']
+            }
+            self.gidIter(gidIterParams)
+
+            
+            #self.sendPitchersToDb(dayUrl, gid)
+
+        dayIterParams = {
+            'startYear': 2017,
+            'endYear': 2017,
+            'cb': dayIterCb,
+            'debug': True
+        }
+
+        self.dayIter(dayIterParams)
 
     def printTreeStats(self, statIn):
         print(statIn.keys())
