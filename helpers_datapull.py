@@ -41,7 +41,7 @@ class DataPuller():
     def sendPitchersToDb(self, url,  gid):
         curUrl = url + gid + 'pitchers/'
         retVal = requests.get(curUrl)
-        print(curUrl, retVal)
+        print(curUrl) #, retVal.text)
 
     # todo: for these stats, pare down by only pulling stats that are needed
     # also, check ratio of events that are missing some stats, any patterns here could throw
@@ -72,6 +72,52 @@ class DataPuller():
             else:
                 retObj[stat] = atbat.get(stat)     
         return retObj
+
+    # dateUrl: string like http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_04/ 
+    # iterate with cbFunc(text) for each url
+    def getPitchers(self):
+
+        def pitcherCb(curUrl):
+            print(curUrl)
+            # curUrl = dataPuller.getDateUrl(baseUrl, day, month, year)
+            # retVal = requests.get(curUrl)
+
+            # # print(retVal.status_code)
+            # retText = retVal.text
+            # if 'gid' in retText:
+            # # gids like /gid_2017_04_01_anamlb_lanmlb_1/' that attach to urls
+
+            # gids = dataPuller.getGameIds(retText)
+
+            # for gid in gids:
+            # dataPuller.sendPitchersToDb(curUrl, gid)
+        iterParams = {
+            'startYear': 2017,
+            'endYear': 2017,
+            'cb': pitcherCb,
+            'debug': True
+        }
+        self.dayIter(iterParams)
+
+    # feed cbFunc with dateUrls, like http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_04/ 
+    def dayIter(self, params):
+        baseUrl ='http://gd2.mlb.com/components/game/mlb/year_'
+        debugComplete = False
+        for year in range(params['startYear'], params['endYear']+1):
+            # iterate through months
+            for month in range(4,12): 
+                # iterate through days
+                for day in range(1, self.getDaysOfMonth(month, year)):
+                    curUrl = self.getDateUrl(baseUrl, day, month, year)
+                    if not debugComplete:
+                        params['cb'](curUrl)
+
+                
+
+                        if params['debug']:
+                            debugComplete = True
+
+
 
     def printTreeStats(self, statIn):
         print(statIn.keys())

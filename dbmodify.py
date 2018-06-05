@@ -27,8 +27,14 @@ class DBInteract:
     def insertBatter(self, batterStats):
         batter = self.DB.Batter( id = batterStats['batter'], 
             batter_name = batterStats['name'])
-        self.DB.session.add(matchup)
+        self.DB.session.add(batter)
         self.DB.session.commit()
+
+    #  def insertPitcher(self, batterStats):
+    #     batter = self.DB.Batter( id = batterStats['batter'], 
+    #         batter_name = batterStats['name'])
+    #     self.DB.session.add(pitcher)
+    #     self.DB.session.commit()
  
     def insertPitch(self, abStats, pitchStats):
         # print(pitchStats)
