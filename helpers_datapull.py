@@ -42,11 +42,6 @@ class DataPuller():
             retArr.append(gid)
         return retArr
 
-    def sendPitcherToDb(self, pitcherIdUrl):
-        retText = requests.get(pitcherIdUrl).text
-        # print(retText)
-        tree = ET.fromstring(retText)
-        print(tree.attrib['first_name'], tree.attrib['last_name'], tree.attrib['id']) 
 
     # todo: for these stats, pare down by only pulling stats that are needed
     # also, check ratio of events that are missing some stats, any patterns here could throw
@@ -79,12 +74,24 @@ class DataPuller():
         return retObj
 
 
-    def getPitchers(self):
+    def sendPitcherToDb(self, pitcherIdUrl):
+        retText = requests.get(pitcherIdUrl).text
+        # print(retText)
+        tree = ET.fromstring(retText)
+        print(tree.attrib['first_name'], tree.attrib['last_name'], tree.attrib['id']) 
+
+
+
+    # iterate through pitcher urls like 
+    # http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_01/gid_2017_04_01_sfnmlb_oakmlb_1/pitchers/425492.xml
+
+    def pitcherIter(self, params):
+
         # parse urls like 
         # http://gd2.mlb.com/components/game/mlb/year_2017/month_04/day_01/gid_2017_04_01_sfnmlb_oakmlb_1/pitchers/
         def pitcherCb(gameUrl):
+
             pitcherUrl = gameUrl+'pitchers'
-            print(pitcherUrl)
             pitcherText = requests.get(pitcherUrl).text
 
             stringToParse = pitcherText.split('.xml</a></li><li><a href="')
@@ -101,18 +108,12 @@ class DataPuller():
 
                 for pitcherId in pitcherIdArr:
                     pitcherIdUrl = pitcherUrl + '/' + pitcherId + '.xml'
-                    print(pitcherIdUrl)
-                    self.sendPitcherToDb(pitcherIdUrl)
-                #     print(pitcherId.split(' ')[1])
+                    params['cb'](pitcherIdUrl)
 
-
-            # print(tree)
-            #printTreeStats(tree)
-        
-        params = {
+        gameParams = {
             'cb': pitcherCb
         }
-        self.gameIter(params)
+        self.gameIter(gameParams)
 
 
 

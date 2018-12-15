@@ -15,7 +15,11 @@ debugComplete = False
 
 eventList = []
 
-dataPuller.getPitchers()
+pitcherIterParams = {
+    'cb': dataPuller.sendPitcherToDb
+}
+
+dataPuller.pitcherIter(pitcherIterParams)
 
 
 
